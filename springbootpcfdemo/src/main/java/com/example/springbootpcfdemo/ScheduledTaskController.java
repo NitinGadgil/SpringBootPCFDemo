@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @RestController
+@RequestMapping(value = "/api/open-enrollment", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ScheduledTaskController {
     private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskController.class);
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -49,14 +52,17 @@ public class ScheduledTaskController {
 
     }
 
-    @RequestMapping(value = "/api/open-enrollment", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-    public void scheduleOpenEnrollment(@Valid @RequestBody OpenEnrollementSchedulingRequest openEnrollementSchedulingRequest) {
+    @RequestMapping(method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.ACCEPTED)
+    public ResponseEntity scheduleOpenEnrollment(@RequestBody OpenEnrollementSchedulingRequest openEnrollementSchedulingRequest) {
+        ResponseEntity responseEntity = new ResponseEntity<>(HttpStatus.ACCEPTED);
+
         logger.info("Setting Request Values");
         this.emailTo = openEnrollementSchedulingRequest.getEmailTo();
         this.emailSubject = openEnrollementSchedulingRequest.getEmailSubject();
         this.emailText = openEnrollementSchedulingRequest.getEmailText();
 
-
+        return responseEntity;
     }
 
     public void sendSimpleMessage( ) {
@@ -67,8 +73,14 @@ public class ScheduledTaskController {
             emailMessage.setSubject(emailSubject);
             emailMessage.setText(emailText);
             emailSender.send(emailMessage);
+            clearValues();
         }
 
+    }
 
+    public void clearValues(){
+        this.emailTo = null;
+        this.emailSubject = null;
+        this.emailText = null;
     }
 }

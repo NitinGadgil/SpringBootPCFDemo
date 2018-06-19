@@ -1,6 +1,11 @@
 package com.example.springbootpcfdemo;
 
 
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+
+@Component
 public class OpenEnrollementSchedulingRequest {
 
     private String emailTo;
@@ -8,6 +13,10 @@ public class OpenEnrollementSchedulingRequest {
     private String emailText;
 
     private String emailSubject;
+
+    private int frequencyInSeconds;
+
+    private String dateTimeOfYear;
 
 
 
@@ -33,5 +42,21 @@ public class OpenEnrollementSchedulingRequest {
 
     public void setEmailSubject(String emailSubject) {
         this.emailSubject = emailSubject;
+    }
+
+    public int getFrequencyInSeconds() {
+        return frequencyInSeconds;
+    }
+
+    public void setFrequencyInSeconds(int frequencyInSeconds) {
+        this.frequencyInSeconds = frequencyInSeconds;
+    }
+
+    public String getDateTimeOfYear() {
+        return dateTimeOfYear;
+    }
+
+    public void setDateTimeOfYear(String dateTimeOfYear) {
+        this.dateTimeOfYear = dateTimeOfYear;
     }
 }

@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping(value = "/api/open-enrollment", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,48 +45,69 @@ public class ScheduledTaskController {
     @Autowired
     public JavaMailSender emailSender;
 
-    @Scheduled(cron = openEnrollmentCronVal)
-    public void notifyOpenEnrollment() {
-        logger.info("Current Thread : {}", Thread.currentThread().getName());
-        logger.info("Cron Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
-        logger.info(emailFrom);
-        logger.info(emailTo);
-        logger.info(emailSubject);
-        logger.info(emailText);
-        sendSimpleMessage();
-
-
-    }
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public ResponseEntity scheduleOpenEnrollment(@RequestBody OpenEnrollementSchedulingRequest openEnrollementSchedulingRequest) {
         ResponseEntity responseEntity = new ResponseEntity<>(HttpStatus.ACCEPTED);
-
-        logger.info("Setting Request Values");
-        this.emailTo = openEnrollementSchedulingRequest.getEmailTo();
-        this.emailSubject = openEnrollementSchedulingRequest.getEmailSubject();
-        this.emailText = openEnrollementSchedulingRequest.getEmailText();
-
+        scheduleTask(openEnrollementSchedulingRequest);
         return responseEntity;
     }
 
-    public void sendSimpleMessage( ) {
 
-        if(emailTo != null && emailText != null && emailSubject != null){
-            SimpleMailMessage emailMessage = new SimpleMailMessage();
-            emailMessage.setTo(emailTo);
-            emailMessage.setSubject(emailSubject);
-            emailMessage.setText(emailText);
-            emailSender.send(emailMessage);
-            clearValues();
+    //    @Scheduled(cron = openEnrollmentCronVal)
+//    public void notifyOpenEnrollment() {
+//        logger.info("Current Thread : {}", Thread.currentThread().getName());
+//        logger.info("Cron Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
+//        logger.info(emailFrom);
+//        logger.info(emailTo);
+//        logger.info(emailSubject);
+//        logger.info(emailText);
+//        sendSimpleMessage();
+//
+//
+//    }
+
+
+    public void scheduleTask(OpenEnrollementSchedulingRequest openEnrollementSchedulingRequest){
+        logger.info("Scheduling a Task");
+
+//        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+//        ScheduledTask scheduledTask = new ScheduledTask (openEnrollementSchedulingRequest);
+//        executor.schedule(scheduledTask, openEnrollementSchedulingRequest.getFrequencyInSeconds() , TimeUnit.SECONDS);
+//        executor.shutdown();
+//
+
+        ScheduledTask scheduledTask = new ScheduledTask (openEnrollementSchedulingRequest);
+        Timer timer = new Timer();
+        timer.schedule(scheduledTask, new Date(openEnrollementSchedulingRequest.getDateTimeOfYear()));
+
+    }
+
+    public void sendSimpleMessage(OpenEnrollementSchedulingRequest request) {
+
+        logger.info("Executing a Scheduled Task set every "+request.getFrequencyInSeconds()+ " Seconds");
+        SimpleMailMessage emailMessage = new SimpleMailMessage();
+        emailMessage.setTo(request.getEmailTo());
+        emailMessage.setSubject(request.getEmailSubject());
+        emailMessage.setText(request.getEmailText());
+        emailSender.send(emailMessage);
+
+    }
+
+
+    public class ScheduledTask extends TimerTask implements Runnable {
+        OpenEnrollementSchedulingRequest request;
+
+        public ScheduledTask(OpenEnrollementSchedulingRequest request) {
+            this.request = request;
         }
 
+        @Override
+        public void run() {
+            sendSimpleMessage(request);
+        }
     }
 
-    public void clearValues(){
-        this.emailTo = null;
-        this.emailSubject = null;
-        this.emailText = null;
-    }
+
 }

@@ -2,11 +2,13 @@ package com.example.springbootpcfdemo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-public class SpringbootpcfdemoApplication {
+@EnableScheduling
+public class SchedulerDemoApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringbootpcfdemoApplication.class, args);
+        SpringApplication.run(SchedulerDemoApplication.class, args);
     }
 }

@@ -4,20 +4,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -46,14 +46,16 @@ public class ScheduledTaskController {
     public JavaMailSender emailSender;
 
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public ResponseEntity scheduleOpenEnrollment(@RequestBody OpenEnrollementSchedulingRequest openEnrollementSchedulingRequest) {
+        MultiValueMap multiValueMap = new HttpHeaders();
+        multiValueMap.add("Access-Control-Allow-Origin","*");
         ResponseEntity responseEntity = new ResponseEntity<>(HttpStatus.ACCEPTED);
         scheduleTask(openEnrollementSchedulingRequest);
         return responseEntity;
     }
-
 
     //    @Scheduled(cron = openEnrollmentCronVal)
 //    public void notifyOpenEnrollment() {
@@ -67,7 +69,6 @@ public class ScheduledTaskController {
 //
 //
 //    }
-
 
     public void scheduleTask(OpenEnrollementSchedulingRequest openEnrollementSchedulingRequest){
         logger.info("Scheduling a Task");
